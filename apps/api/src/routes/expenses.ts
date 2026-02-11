@@ -106,14 +106,15 @@ expensesRouter.get('/', async (req, res) => {
       updatedAt: e.updatedAt.toISOString(),
     }));
 
-    const totals = rows.reduce<{ amount: number; tps: number; tvq: number; total: number }>(
-      (acc, r) => ({
+    type Totals = { amount: number; tps: number; tvq: number; total: number };
+    const totals = rows.reduce(
+      (acc: Totals, r: (typeof rows)[number]) => ({
         amount: acc.amount + r.amount,
         tps: acc.tps + r.tps,
         tvq: acc.tvq + r.tvq,
         total: acc.total + r.total,
       }),
-      { amount: 0, tps: 0, tvq: 0, total: 0 }
+      { amount: 0, tps: 0, tvq: 0, total: 0 } satisfies Totals
     );
 
     return res.json({ expenses: rows, totals });
