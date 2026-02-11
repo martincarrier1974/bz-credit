@@ -28,6 +28,13 @@ app.use('/api/gl-accounts', glAccountsRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
+// SPA frontend (prod only)
+const webDist = path.join(__dirname, '../../web/dist');
+app.use(express.static(webDist));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(webDist, 'index.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`API listening on http://localhost:${PORT}`);
 });
