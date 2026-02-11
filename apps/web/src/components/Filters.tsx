@@ -20,9 +20,9 @@ export function Filters({ filters, onFiltersChange }: Props) {
     onFiltersChange({ ...filters, ...patch });
 
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/50">
-      <div className="flex flex-wrap items-end gap-8">
-        <div className="grid gap-2">
+    <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white px-3 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/50 sm:px-4">
+      <div className="grid grid-cols-1 gap-4 sm:flex sm:flex-wrap sm:items-end sm:gap-6 md:gap-8">
+        <div className="grid min-w-0 gap-2 sm:min-w-[11rem]">
           <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Du
           </Label>
@@ -30,10 +30,10 @@ export function Filters({ filters, onFiltersChange }: Props) {
             type="date"
             value={filters.from}
             onChange={(e) => set({ from: e.target.value })}
-            className="min-w-[11rem]"
+            className="w-full"
           />
         </div>
-        <div className="grid gap-2">
+        <div className="grid min-w-0 gap-2 sm:min-w-[11rem]">
           <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Au
           </Label>
@@ -41,10 +41,10 @@ export function Filters({ filters, onFiltersChange }: Props) {
             type="date"
             value={filters.to}
             onChange={(e) => set({ to: e.target.value })}
-            className="min-w-[11rem]"
+            className="w-full"
           />
         </div>
-        <div className="grid gap-2">
+        <div className="grid min-w-0 gap-2 sm:min-w-[14rem]">
           <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
             Recherche
           </Label>
@@ -52,10 +52,10 @@ export function Filters({ filters, onFiltersChange }: Props) {
             placeholder="Titre, description…"
             value={filters.search}
             onChange={(e) => set({ search: e.target.value })}
-            className="min-w-[14rem]"
+            className="w-full"
           />
         </div>
-        <div className="flex flex-wrap items-center gap-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6 md:gap-8">
           <div>
             <Label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Validation comptable
@@ -65,7 +65,7 @@ export function Filters({ filters, onFiltersChange }: Props) {
               onValueChange={(v) =>
                 set({ validated: v as 'all' | 'true' | 'false' })
               }
-              className="flex gap-5"
+              className="flex flex-wrap gap-4 sm:gap-5"
             >
               <label className="flex cursor-pointer items-center gap-2.5 text-base text-slate-700 dark:text-slate-300">
                 <RadioGroupItem value="all" />
@@ -90,7 +90,7 @@ export function Filters({ filters, onFiltersChange }: Props) {
               onValueChange={(v) =>
                 set({ hasInvoice: v as 'all' | 'true' | 'false' })
               }
-              className="flex gap-5"
+              className="flex flex-wrap gap-4 sm:gap-5"
             >
               <label className="flex cursor-pointer items-center gap-2.5 text-base text-slate-700 dark:text-slate-300">
                 <RadioGroupItem value="all" />

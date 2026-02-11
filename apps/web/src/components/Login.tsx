@@ -25,8 +25,8 @@ export function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-sky-200 dark:bg-slate-900 p-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+    <div className="flex min-h-screen items-center justify-center bg-sky-200 p-4 dark:bg-slate-900 sm:p-6">
+      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-4 shadow-lg dark:border-slate-700 dark:bg-slate-800 sm:p-6">
         <h1 className="mb-6 text-center text-xl font-semibold text-slate-900 dark:text-slate-100">
           Factures carte de crédit
         </h1>

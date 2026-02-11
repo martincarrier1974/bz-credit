@@ -330,8 +330,8 @@ export function ExpensesTable({
             ))}
       </Dialog>
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800/50">
-        <div className="overflow-hidden">
-        <table className="w-full table-fixed text-sm">
+        <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
+        <table className="w-full min-w-[900px] table-fixed text-sm">
           <colgroup>
             <col style={{ width: '14%' }} />
             <col style={{ width: '7%' }} />

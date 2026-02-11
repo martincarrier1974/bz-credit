@@ -17,27 +17,25 @@ export function Header({ onLogout, onAddExpense, onOpenEmployés, onOpenCartes, 
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-slate-900/80">
-      <div className="mx-auto flex h-16 max-w-full items-center justify-between px-2 py-4 sm:px-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            {!bzFailed ? (
-              <img
-                src="/bz.png"
-                alt="BZ"
-                className="h-11 w-auto object-contain"
-                onError={() => setBzFailed(true)}
-              />
-            ) : (
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-800 text-white text-base font-bold dark:bg-slate-700">
-                BZ
-              </div>
-            )}
-          </div>
-          <span className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+      <div className="mx-auto flex max-w-full flex-col gap-3 px-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0 sm:px-4">
+        <div className="flex min-w-0 shrink-0 items-center gap-3">
+          {!bzFailed ? (
+            <img
+              src="/bz.png"
+              alt="BZ"
+              className="h-9 w-auto shrink-0 object-contain sm:h-11"
+              onError={() => setBzFailed(true)}
+            />
+          ) : (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-white text-sm font-bold dark:bg-slate-700 sm:h-11 sm:w-11">
+              BZ
+            </div>
+          )}
+          <span className="truncate text-base font-semibold text-slate-900 dark:text-slate-50 sm:text-xl">
             Factures carte de crédit
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <Button
             variant="ghost"
             size="sm"
@@ -92,10 +90,10 @@ export function Header({ onLogout, onAddExpense, onOpenEmployés, onOpenCartes, 
           </Button>
           <Button
             onClick={onAddExpense}
-            className="h-11 rounded-lg px-5 text-base font-medium"
+            className="h-9 shrink-0 rounded-lg px-3 text-sm font-medium sm:h-11 sm:px-5 sm:text-base"
           >
-            <Plus className="mr-2 h-5 w-5" />
-            Nouvelle facture
+            <Plus className="h-4 w-4 sm:mr-2 sm:h-5 sm:w-5" />
+            <span className="ml-1.5 sm:ml-0">Nouvelle facture</span>
           </Button>
         </div>
       </div>

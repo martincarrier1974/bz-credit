@@ -121,7 +121,7 @@ export default function App() {
         }}
         onOpenGL={() => setGlOpen(true)}
       />
-      <main className="mx-auto max-w-[100%] px-2 py-6 sm:px-4">
+      <main className="mx-auto w-full max-w-[100%] px-2 py-4 sm:px-4 sm:py-6">
         <Filters
           filters={filters}
           onFiltersChange={setFilters}
