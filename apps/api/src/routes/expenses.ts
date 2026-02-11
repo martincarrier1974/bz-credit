@@ -7,6 +7,7 @@ import {
   expenseQuerySchema,
 } from '@bz-credit/shared';
 import { uploadReceipt } from '../middleware/upload.js';
+import { encryptDeterministic, decrypt } from '../lib/encrypt.js';
 
 const prisma = new PrismaClient();
 export const expensesRouter = Router();
@@ -23,13 +24,18 @@ async function getDefaultCategoryId(): Promise<string> {
 
 async function getOrCreateSupplierId(name: string): Promise<string> {
   const trimmed = name.trim();
+  const encName = encryptDeterministic(trimmed);
   let supplier = await prisma.supplier.findFirst({
-    where: { name: trimmed },
+    where: { name: encName },
   });
   if (!supplier) {
-    supplier = await prisma.supplier.create({ data: { name: trimmed } });
+    supplier = await prisma.supplier.create({ data: { name: encName } });
   }
   return supplier.id;
+}
+
+function decryptSupplier(s: { id: string; name: string }) {
+  return { id: s.id, name: decrypt(s.name) ?? s.name };
 }
 
 expensesRouter.get('/', async (req, res) => {
@@ -79,9 +85,9 @@ expensesRouter.get('/', async (req, res) => {
       title: e.title,
       description: e.description,
       employeeId: e.employeeId,
-      employee: { id: e.employee.id, name: e.employee.name },
+      employee: { id: e.employee.id, name: decrypt(e.employee.name) ?? e.employee.name },
       supplierId: e.supplierId,
-      supplier: { id: e.supplier.id, name: e.supplier.name },
+      supplier: decryptSupplier(e.supplier),
       date: e.date,
       amount: e.amount,
       tps: e.tps,
@@ -92,8 +98,8 @@ expensesRouter.get('/', async (req, res) => {
       glAccountId: e.glAccountId,
       glAccount: {
         id: e.glAccount.id,
-        code: e.glAccount.code,
-        name: e.glAccount.name,
+        code: decrypt(e.glAccount.code) ?? e.glAccount.code,
+        name: decrypt(e.glAccount.name) ?? e.glAccount.name,
       },
       hasInvoice: e.hasInvoice,
       validated: e.validated,
@@ -161,9 +167,9 @@ expensesRouter.post('/', async (req, res) => {
       title: expense.title,
       description: expense.description,
       employeeId: expense.employeeId,
-      employee: { id: expense.employee.id, name: expense.employee.name },
+      employee: { id: expense.employee.id, name: decrypt(expense.employee.name) ?? expense.employee.name },
       supplierId: expense.supplierId,
-      supplier: { id: expense.supplier.id, name: expense.supplier.name },
+      supplier: decryptSupplier(expense.supplier),
       date: expense.date,
       amount: expense.amount,
       tps: expense.tps,
@@ -174,8 +180,8 @@ expensesRouter.post('/', async (req, res) => {
       glAccountId: expense.glAccountId,
       glAccount: {
         id: expense.glAccount.id,
-        code: expense.glAccount.code,
-        name: expense.glAccount.name,
+        code: decrypt(expense.glAccount.code) ?? expense.glAccount.code,
+        name: decrypt(expense.glAccount.name) ?? expense.glAccount.name,
       },
       hasInvoice: expense.hasInvoice,
       validated: expense.validated,
@@ -233,9 +239,9 @@ expensesRouter.put('/:id', async (req, res) => {
       title: expense.title,
       description: expense.description,
       employeeId: expense.employeeId,
-      employee: { id: expense.employee.id, name: expense.employee.name },
+      employee: { id: expense.employee.id, name: decrypt(expense.employee.name) ?? expense.employee.name },
       supplierId: expense.supplierId,
-      supplier: { id: expense.supplier.id, name: expense.supplier.name },
+      supplier: decryptSupplier(expense.supplier),
       date: expense.date,
       amount: expense.amount,
       tps: expense.tps,
@@ -246,8 +252,8 @@ expensesRouter.put('/:id', async (req, res) => {
       glAccountId: expense.glAccountId,
       glAccount: {
         id: expense.glAccount.id,
-        code: expense.glAccount.code,
-        name: expense.glAccount.name,
+        code: decrypt(expense.glAccount.code) ?? expense.glAccount.code,
+        name: decrypt(expense.glAccount.name) ?? expense.glAccount.name,
       },
       hasInvoice: expense.hasInvoice,
       validated: expense.validated,
@@ -304,6 +310,7 @@ expensesRouter.post('/:id/receipt', (req, res, next) => {
           receiptPath: filename,
           receiptFile: req.file.buffer,
           receiptMimeType: req.file.mimetype,
+          hasInvoice: true,
         },
       });
       return res.json({ receiptPath: `/api/expenses/${req.params.id}/receipt` });

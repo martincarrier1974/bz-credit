@@ -15,12 +15,11 @@ import {
   DialogContent,
 } from '@/components/ui/dialog';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { Pencil, Trash2, Paperclip, FileImage, ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
+import { Pencil, Paperclip, FileImage, ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 
 type Props = {
   data: Expense[];
   onEdit: (expense: Expense) => void;
-  onDelete: (id: string) => void;
   onToggleValidated: (expense: Expense) => void;
   onUploadReceipt: (id: string, file: File) => void;
   uploadingId: string | null;
@@ -29,7 +28,6 @@ type Props = {
 export function ExpensesTable({
   data,
   onEdit,
-  onDelete,
   onToggleValidated,
   onUploadReceipt,
   uploadingId,
@@ -226,15 +224,6 @@ export function ExpensesTable({
             className="h-10 w-10 text-slate-600 dark:text-slate-400"
           >
             <Pencil className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(row.original.id)}
-            title="Supprimer"
-            className="h-10 w-10 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300"
-          >
-            <Trash2 className="h-5 w-5" />
           </Button>
         </div>
       ),

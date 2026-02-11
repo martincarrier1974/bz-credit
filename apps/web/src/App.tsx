@@ -9,7 +9,6 @@ import {
   useExpensesQuery,
   useCreateExpense,
   useUpdateExpense,
-  useDeleteExpense,
   useUploadReceipt,
 } from '@/hooks/use-expenses';
 import { useMeta } from '@/hooks/use-meta';
@@ -59,7 +58,6 @@ export default function App() {
   const meta = useMeta();
   const createMutation = useCreateExpense();
   const updateMutation = useUpdateExpense();
-  const deleteMutation = useDeleteExpense();
   const uploadMutation = useUploadReceipt();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -91,7 +89,7 @@ export default function App() {
     createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-sky-200 dark:bg-slate-900">
       <Header
         onAddExpense={() => {
           setEditingExpense(null);
@@ -129,11 +127,6 @@ export default function App() {
               onEdit={(e) => {
                 setEditingExpense(e);
                 setDrawerOpen(true);
-              }}
-              onDelete={(id) => {
-                if (window.confirm('Supprimer cette dépense ?')) {
-                  deleteMutation.mutate(id);
-                }
               }}
               onToggleValidated={handleToggleValidated}
               onUploadReceipt={(id, file) => uploadMutation.mutate({ id, file })}
