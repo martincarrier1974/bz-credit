@@ -13,6 +13,9 @@
     "db:generate": "prisma generate",
     "lint": "eslint src --ext .ts"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@bz-credit/shared": "*",
     "cors": "^2.8.5",

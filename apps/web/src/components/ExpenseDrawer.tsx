@@ -30,9 +30,27 @@ export type ExpenseForm = {
   tvq: string;
   categoryId: string;
   glAccountId: string;
+  enteredBy: string;
   hasInvoice: boolean;
   validated: boolean;
 };
+
+// Taux applicables au Québec
+const TPS_RATE = 0.05;
+const TVQ_RATE = 0.09975;
+const FACTEUR_TOTAL = 1 + TPS_RATE + TVQ_RATE; // 1.14975
+
+/** Calcule montant HT, TPS, TVQ à partir du montant total (inverse) */
+function calculDepuisTotal(montantTotal: number): {
+  amount: number;
+  tps: number;
+  tvq: number;
+} {
+  const amount = Math.round((montantTotal / FACTEUR_TOTAL) * 100) / 100;
+  const tps = Math.round(amount * TPS_RATE * 100) / 100;
+  const tvq = Math.round(amount * TVQ_RATE * 100) / 100;
+  return { amount, tps, tvq };
+}
 
 const emptyForm: ExpenseForm = {
   title: '',
@@ -45,6 +63,7 @@ const emptyForm: ExpenseForm = {
   tvq: '',
   categoryId: '',
   glAccountId: '',
+  enteredBy: '',
   hasInvoice: false,
   validated: false,
 };
@@ -62,6 +81,7 @@ function expenseToForm(e: Expense | null): ExpenseForm {
     tvq: String(e.tvq),
     categoryId: e.categoryId,
     glAccountId: e.glAccountId,
+    enteredBy: e.enteredBy ?? '',
     hasInvoice: e.hasInvoice,
     validated: e.validated,
   };
@@ -88,9 +108,30 @@ export function ExpenseDrawer({
   const form = expenseToForm(expense);
 
   const [state, setState] = useState<ExpenseForm>(form);
+  const [montantTotalInput, setMontantTotalInput] = useState('');
   useEffect(() => {
-    setState(expenseToForm(expense));
+    const f = expenseToForm(expense);
+    setState(f);
+    const total =
+      (parseFloat(f.amount) || 0) + (parseFloat(f.tps) || 0) + (parseFloat(f.tvq) || 0);
+    setMontantTotalInput(total ? String(total) : '');
   }, [expense, open]);
+
+  const handleMontantTotalChange = (val: string) => {
+    setMontantTotalInput(val);
+    const total = parseFloat(val) || 0;
+    if (total > 0) {
+      const { amount, tps, tvq } = calculDepuisTotal(total);
+      setState((s) => ({
+        ...s,
+        amount: String(amount),
+        tps: String(tps),
+        tvq: String(tvq),
+      }));
+    } else {
+      setState((s) => ({ ...s, amount: '', tps: '', tvq: '' }));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,62 +210,85 @@ export function ExpenseDrawer({
             </div>
             <div className="grid grid-cols-4 gap-4">
               <div className="grid gap-2">
-                <Label>Montant</Label>
+                <Label>Montant total (avec taxes)</Label>
                 <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={state.amount}
-                  onChange={(e) =>
-                    setState((s) => ({ ...s, amount: e.target.value }))
-                  }
+                  type="text"
+                  inputMode="decimal"
+                  value={montantTotalInput}
+                  onChange={(e) => handleMontantTotalChange(e.target.value)}
+                  placeholder="Ex: 114.98"
                 />
               </div>
               <div className="grid gap-2">
-                <Label>TPS</Label>
+                <Label>TPS (5%)</Label>
                 <Input
                   type="number"
                   step="0.01"
                   min="0"
+                  readOnly
+                  className="bg-muted"
                   value={state.tps}
-                  onChange={(e) =>
-                    setState((s) => ({ ...s, tps: e.target.value }))
-                  }
                 />
               </div>
               <div className="grid gap-2">
-                <Label>TVQ</Label>
+                <Label>TVQ (9,975%)</Label>
                 <Input
                   type="number"
                   step="0.01"
                   min="0"
+                  readOnly
+                  className="bg-muted"
                   value={state.tvq}
-                  onChange={(e) =>
-                    setState((s) => ({ ...s, tvq: e.target.value }))
-                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Montant hors taxes</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  readOnly
+                  className="bg-muted"
+                  value={state.amount}
                 />
               </div>
             </div>
             <div className="grid gap-2">
               <Label>Compte GL</Label>
               <Select
-                value={state.glAccountId}
+                value={state.glAccountId || undefined}
                 onValueChange={(v) =>
                   setState((s) => ({ ...s, glAccountId: v }))
                 }
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
+                  <SelectValue placeholder="Sélectionner un compte GL" />
                 </SelectTrigger>
-                <SelectContent>
-                  {meta?.glAccounts.map((g) => (
-                    <SelectItem key={g.id} value={g.id}>
-                      {g.code} – {g.name}
-                    </SelectItem>
-                  ))}
+                <SelectContent className="z-[100]" position="popper">
+                  {(meta?.glAccounts ?? []).length === 0 ? (
+                    <div className="px-3 py-4 text-sm text-slate-500">
+                      Aucun compte GL. Ajoutez-en via le bouton GL.
+                    </div>
+                  ) : (
+                    (meta?.glAccounts ?? []).map((g) => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.code} – {g.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Entré par qui</Label>
+              <Input
+                value={state.enteredBy}
+                onChange={(e) =>
+                  setState((s) => ({ ...s, enteredBy: e.target.value }))
+                }
+                placeholder="Nom de la personne qui a saisi la facture"
+              />
             </div>
             <div className="flex items-center gap-2">
               <Switch

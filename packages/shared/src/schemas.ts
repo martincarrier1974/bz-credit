@@ -11,6 +11,7 @@ export const expenseCreateSchema = z.object({
   tvq: z.number().min(0).default(0),
   categoryId: z.string().optional(),
   glAccountId: z.string().min(1, 'Compte GL requis'),
+  enteredBy: z.string().optional(),
   hasInvoice: z.boolean().default(false),
   validated: z.boolean().default(false),
 });

@@ -15,7 +15,7 @@ metaRouter.get('/', async (_req, res) => {
     return res.json({
       employees: employees.map((e: { id: string; name: string }) => ({ id: e.id, name: e.name })),
       categories: categories.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })),
-      glAccounts: glAccounts.map((g: { id: string; code: string; name: string }) => ({ id: g.id, code: g.code, name: g.name })),
+      glAccounts: glAccounts.map((g: { id: string; code: string; name: string; company?: string | null }) => ({ id: g.id, code: g.code, name: g.name, company: g.company ?? undefined })),
       suppliers: suppliers.map((s: { id: string; name: string }) => ({ id: s.id, name: s.name })),
     });
   } catch (err) {

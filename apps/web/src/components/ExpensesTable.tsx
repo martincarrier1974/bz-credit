@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   flexRender,
   getCoreRowModel,
@@ -9,8 +10,12 @@ import type { Expense } from '@bz-credit/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { Pencil, Trash2, Paperclip, FileImage } from 'lucide-react';
+import { Pencil, Trash2, Paperclip, FileImage, ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 
 type Props = {
   data: Expense[];
@@ -31,6 +36,12 @@ export function ExpensesTable({
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [viewingReceipt, setViewingReceipt] = useState<{
+    id: string;
+    url: string;
+    mimeType?: string;
+  } | null>(null);
+  const [receiptFullscreen, setReceiptFullscreen] = useState(false);
 
   const triggerFileInput = (id: string) => {
     setPendingId(id);
@@ -51,12 +62,12 @@ export function ExpensesTable({
       accessorKey: 'title',
       header: 'Titre / Description',
       cell: ({ row }) => (
-        <div>
-          <div className="font-medium text-slate-900 dark:text-slate-100">
+        <div className="min-w-0 overflow-hidden">
+          <div className="truncate font-medium text-slate-900 dark:text-slate-100" title={row.original.title}>
             {row.original.title}
           </div>
           {row.original.description && (
-            <div className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+            <div className="truncate text-xs text-slate-500 dark:text-slate-400" title={row.original.description}>
               {row.original.description}
             </div>
           )}
@@ -68,7 +79,7 @@ export function ExpensesTable({
       id: 'employee',
       header: 'Employé',
       cell: ({ getValue }) => (
-        <span className="text-slate-800 dark:text-slate-200">{getValue() as string}</span>
+        <span className="block truncate text-slate-800 dark:text-slate-200" title={getValue() as string}>{getValue() as string}</span>
       ),
     },
     {
@@ -76,7 +87,7 @@ export function ExpensesTable({
       id: 'supplier',
       header: 'Fournisseur',
       cell: ({ getValue }) => (
-        <span className="text-slate-800 dark:text-slate-200">{getValue() as string}</span>
+        <span className="block truncate text-slate-800 dark:text-slate-200" title={getValue() as string}>{getValue() as string}</span>
       ),
     },
     {
@@ -129,7 +140,7 @@ export function ExpensesTable({
       id: 'category',
       header: 'Catégorie',
       cell: ({ getValue }) => (
-        <span className="text-slate-700 dark:text-slate-300">{getValue() as string}</span>
+        <span className="block truncate text-slate-700 dark:text-slate-300">{getValue() as string}</span>
       ),
     },
     {
@@ -137,7 +148,7 @@ export function ExpensesTable({
       id: 'gl',
       header: 'GL',
       cell: ({ row }) => (
-        <span className="text-sm text-slate-700 dark:text-slate-300">
+        <span className="block truncate text-slate-700 dark:text-slate-300" title={`${row.original.glAccount.code} – ${row.original.glAccount.name}`}>
           {row.original.glAccount.code} – {row.original.glAccount.name}
         </span>
       ),
@@ -172,15 +183,21 @@ export function ExpensesTable({
         return (
           <div className="flex items-center gap-1">
             {exp.receiptPath ? (
-              <a
-                href={exp.receiptPath}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 rounded px-2 py-1 text-sm text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto gap-1 px-2 py-1 text-sm text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
                 title="Voir le reçu"
+                onClick={() =>
+                  setViewingReceipt({
+                    id: exp.id,
+                    url: exp.receiptPath!,
+                    mimeType: exp.receiptMimeType,
+                  })
+                }
               >
                 <FileImage className="h-4 w-4" /> Voir
-              </a>
+              </Button>
             ) : null}
             <Button
               variant="ghost"
@@ -239,16 +256,124 @@ export function ExpensesTable({
         className="hidden"
         onChange={handleFileChange}
       />
+      <Dialog
+        open={!!viewingReceipt}
+        onOpenChange={(open) => {
+          if (!open) {
+            setViewingReceipt(null);
+            setReceiptFullscreen(false);
+          }
+        }}
+      >
+        {viewingReceipt &&
+          (receiptFullscreen
+            ? createPortal(
+                <div className="fixed inset-0 z-[100] flex flex-col bg-slate-900">
+                  <div className="flex shrink-0 items-center justify-between border-b border-slate-700 px-4 py-3">
+                    <Button
+                      variant="outline"
+                      className="gap-2 text-white border-slate-600 hover:bg-slate-700"
+                      onClick={() => setReceiptFullscreen(false)}
+                    >
+                      <Minimize2 className="h-4 w-4" /> Réduire
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="gap-2 text-white border-slate-600 hover:bg-slate-700"
+                      onClick={() => {
+                        setViewingReceipt(null);
+                        setReceiptFullscreen(false);
+                      }}
+                    >
+                      <ArrowLeft className="h-4 w-4" /> Retour
+                    </Button>
+                  </div>
+                  <div className="min-h-0 flex-1 flex items-center justify-center overflow-hidden p-4">
+                    {viewingReceipt.mimeType?.startsWith('image/') ? (
+                      <img
+                        src={viewingReceipt.url}
+                        alt="Reçu"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    ) : (
+                      <iframe
+                        src={viewingReceipt.url}
+                        title="Reçu"
+                        className="h-full w-full border-0"
+                      />
+                    )}
+                  </div>
+                </div>,
+                document.body
+              )
+            : (
+          <DialogContent
+            title="Reçu"
+            onClose={() => setViewingReceipt(null)}
+            className="flex h-[90vh] max-h-[90vh] max-w-4xl flex-col overflow-hidden"
+          >
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+              <div className="flex shrink-0 gap-2">
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => setViewingReceipt(null)}
+                >
+                  <ArrowLeft className="h-4 w-4" /> Retour
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => setReceiptFullscreen(true)}
+                >
+                  <Maximize2 className="h-4 w-4" /> Plein écran
+                </Button>
+              </div>
+              <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-900">
+                {viewingReceipt.mimeType?.startsWith('image/') ? (
+                  <img
+                    src={viewingReceipt.url}
+                    alt="Reçu"
+                    className="max-h-full max-w-full object-contain"
+                  />
+                ) : (
+                  <iframe
+                    src={viewingReceipt.url}
+                    title="Reçu"
+                    className="h-full w-full border-0"
+                  />
+                )}
+              </div>
+            </div>
+          </DialogContent>
+            ))}
+      </Dialog>
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800/50">
-        <div className="overflow-x-auto">
-        <table className="w-full">
+        <div className="overflow-hidden">
+        <table className="w-full table-fixed text-sm">
+          <colgroup>
+            <col style={{ width: '14%' }} />
+            <col style={{ width: '7%' }} />
+            <col style={{ width: '7%' }} />
+            <col style={{ width: '5%' }} />
+            <col style={{ width: '5%' }} />
+            <col style={{ width: '4%' }} />
+            <col style={{ width: '4%' }} />
+            <col style={{ width: '5%' }} />
+            <col style={{ width: '6%' }} />
+            <col style={{ width: '14%' }} />
+            <col style={{ width: '5%' }} />
+            <col style={{ width: '8%' }} />
+            <col style={{ width: '8%' }} />
+            <col style={{ width: '8%' }} />
+          </colgroup>
           <thead className="sticky top-0 z-10 border-b-2 border-slate-200 bg-slate-100 dark:border-slate-600 dark:bg-slate-800">
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((h) => (
                   <th
                     key={h.id}
-                    className="px-5 py-4 text-left text-sm font-semibold uppercase tracking-wider text-slate-700 whitespace-nowrap dark:text-slate-300"
+                    className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300"
                   >
                     {flexRender(h.column.columnDef.header, h.getContext())}
                   </th>
@@ -269,7 +394,7 @@ export function ExpensesTable({
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className="px-5 py-4 text-base text-slate-900 whitespace-nowrap dark:text-slate-100"
+                    className="px-2 py-3 text-slate-900 dark:text-slate-100"
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>

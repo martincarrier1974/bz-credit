@@ -1,21 +1,22 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Moon, Sun, Users, CreditCard } from 'lucide-react';
+import { Plus, Moon, Sun, Users, CreditCard, BookOpen } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 type Props = {
   onAddExpense: () => void;
   onOpenEmployés: () => void;
   onOpenCartes: () => void;
+  onOpenGL: () => void;
 };
 
-export function Header({ onAddExpense, onOpenEmployés, onOpenCartes }: Props) {
+export function Header({ onAddExpense, onOpenEmployés, onOpenCartes, onOpenGL }: Props) {
   const [bzFailed, setBzFailed] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-slate-900/80">
-      <div className="mx-auto flex h-16 max-w-[1800px] items-center justify-between px-5 py-4 sm:px-8">
+      <div className="mx-auto flex h-16 max-w-full items-center justify-between px-2 py-4 sm:px-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
             {!bzFailed ? (
@@ -45,6 +46,16 @@ export function Header({ onAddExpense, onOpenEmployés, onOpenCartes }: Props) {
           >
             <Users className="h-5 w-5" />
             <span className="hidden sm:inline">Employés</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onOpenGL}
+            title="Départements grand livre"
+            className="h-11 gap-2 text-slate-600 dark:text-slate-400"
+          >
+            <BookOpen className="h-5 w-5" />
+            <span className="hidden sm:inline">GL</span>
           </Button>
           <Button
             variant="ghost"

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("postgresql://postgres:NewpDDAMUPWEkCgpdwlyhpGorVtJKwyH@postgres.railway.internal:5432/railway")
+  url      = env("DATABASE_URL")
 }
 
 model Employee {
@@ -48,6 +48,7 @@ model GlAccount {
   id        String    @id @default(cuid())
   code      String
   name      String
+  company   String?
   expenses  Expense[]
 }
 
@@ -61,7 +62,10 @@ model Expense {
   tvq         Float    @default(0)
   hasInvoice  Boolean  @default(false)
   validated   Boolean  @default(false)
-  receiptPath String?
+  receiptPath    String?  // nom du fichier pour affichage
+  receiptFile    Bytes?   // contenu du fichier en BD
+  receiptMimeType String? // ex: image/jpeg, application/pdf
+  enteredBy   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

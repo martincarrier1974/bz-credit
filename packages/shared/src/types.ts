@@ -36,9 +36,11 @@ export interface Expense {
   category: Category;
   glAccountId: string;
   glAccount: GlAccount;
+  enteredBy: string | null;
   hasInvoice: boolean;
   validated: boolean;
   receiptPath: string | null;
+  receiptMimeType?: string;
   createdAt: string;
   updatedAt: string;
 }

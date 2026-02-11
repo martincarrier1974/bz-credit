@@ -20,7 +20,7 @@ export function Filters({ filters, onFiltersChange }: Props) {
     onFiltersChange({ ...filters, ...patch });
 
   return (
-    <div className="flex flex-wrap items-end justify-between gap-6 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/50">
+    <div className="flex flex-wrap items-end justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/50">
       <div className="flex flex-wrap items-end gap-8">
         <div className="grid gap-2">
           <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">

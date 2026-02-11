@@ -1,7 +1,5 @@
 import { Router } from 'express';
-import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { PrismaClient } from '@prisma/client';
 import {
   expenseCreateSchema,
@@ -10,8 +8,6 @@ import {
 } from '@bz-credit/shared';
 import { uploadReceipt } from '../middleware/upload.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.join(__dirname, '../../uploads');
 const prisma = new PrismaClient();
 export const expensesRouter = Router();
 
@@ -101,7 +97,11 @@ expensesRouter.get('/', async (req, res) => {
       },
       hasInvoice: e.hasInvoice,
       validated: e.validated,
-      receiptPath: e.receiptPath,
+      enteredBy: e.enteredBy,
+      receiptPath: e.receiptFile
+        ? `/api/expenses/${e.id}/receipt`
+        : e.receiptPath,
+      receiptMimeType: e.receiptMimeType ?? undefined,
       createdAt: e.createdAt.toISOString(),
       updatedAt: e.updatedAt.toISOString(),
     }));
@@ -145,6 +145,7 @@ expensesRouter.post('/', async (req, res) => {
         tvq: data.tvq,
         categoryId,
         glAccountId: data.glAccountId,
+        enteredBy: data.enteredBy?.trim() || null,
         hasInvoice: data.hasInvoice,
         validated: data.validated,
       },
@@ -178,7 +179,11 @@ expensesRouter.post('/', async (req, res) => {
       },
       hasInvoice: expense.hasInvoice,
       validated: expense.validated,
-      receiptPath: expense.receiptPath,
+      enteredBy: expense.enteredBy,
+      receiptPath: expense.receiptFile
+        ? `/api/expenses/${expense.id}/receipt`
+        : expense.receiptPath,
+      receiptMimeType: expense.receiptMimeType ?? undefined,
       createdAt: expense.createdAt.toISOString(),
       updatedAt: expense.updatedAt.toISOString(),
     };
@@ -206,6 +211,7 @@ expensesRouter.put('/:id', async (req, res) => {
         ...(data.tvq != null && { tvq: data.tvq }),
         ...(data.categoryId != null && { categoryId: data.categoryId }),
         ...(data.glAccountId != null && { glAccountId: data.glAccountId }),
+        ...(data.enteredBy !== undefined && { enteredBy: data.enteredBy?.trim() || null }),
         ...(data.hasInvoice !== undefined && { hasInvoice: data.hasInvoice }),
         ...(data.validated !== undefined && { validated: data.validated }),
       };
@@ -245,7 +251,11 @@ expensesRouter.put('/:id', async (req, res) => {
       },
       hasInvoice: expense.hasInvoice,
       validated: expense.validated,
-      receiptPath: expense.receiptPath,
+      enteredBy: expense.enteredBy,
+      receiptPath: expense.receiptFile
+        ? `/api/expenses/${expense.id}/receipt`
+        : expense.receiptPath,
+      receiptMimeType: expense.receiptMimeType ?? undefined,
       createdAt: expense.createdAt.toISOString(),
       updatedAt: expense.updatedAt.toISOString(),
     };
@@ -259,8 +269,26 @@ expensesRouter.put('/:id', async (req, res) => {
   }
 });
 
+expensesRouter.get('/:id/receipt', async (req, res) => {
+  try {
+    const expense = await prisma.expense.findUnique({
+      where: { id: req.params.id },
+      select: { receiptFile: true, receiptMimeType: true, receiptPath: true },
+    });
+    if (!expense?.receiptFile) {
+      return res.status(404).json({ error: 'Reçu non trouvé' });
+    }
+    const mime = expense.receiptMimeType ?? 'application/octet-stream';
+    res.setHeader('Content-Type', mime);
+    res.setHeader('Content-Disposition', `inline; filename="${expense.receiptPath ?? 'receipt'}"`);
+    return res.send(Buffer.from(expense.receiptFile));
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 expensesRouter.post('/:id/receipt', (req, res, next) => {
-  fs.mkdirSync(uploadsDir, { recursive: true });
   uploadReceipt(req, res, async (err) => {
     if (err) {
       return res.status(400).json({ error: err.message ?? 'Upload failed' });
@@ -269,12 +297,16 @@ expensesRouter.post('/:id/receipt', (req, res, next) => {
       return res.status(400).json({ error: 'Aucun fichier reçu' });
     }
     try {
-      const receiptPath = `/uploads/${req.file.filename}`;
+      const filename = req.file.originalname || `receipt${path.extname(req.file.originalname || '')}`;
       await prisma.expense.update({
         where: { id: req.params.id },
-        data: { receiptPath },
+        data: {
+          receiptPath: filename,
+          receiptFile: req.file.buffer,
+          receiptMimeType: req.file.mimetype,
+        },
       });
-      return res.json({ receiptPath });
+      return res.json({ receiptPath: `/api/expenses/${req.params.id}/receipt` });
     } catch (e: unknown) {
       console.error(e);
       return res.status(500).json({ error: 'Internal server error' });

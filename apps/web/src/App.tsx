@@ -4,6 +4,7 @@ import { Filters, type FilterState } from '@/components/Filters';
 import { ExpensesTable } from '@/components/ExpensesTable';
 import { ExpenseDrawer } from '@/components/ExpenseDrawer';
 import { ManagementDrawer } from '@/components/ManagementDrawer';
+import { GLDrawer } from '@/components/GLDrawer';
 import {
   useExpensesQuery,
   useCreateExpense,
@@ -44,6 +45,7 @@ function formToPayload(form: ExpenseForm) {
     tps: parseFloat(form.tps) || 0,
     tvq: parseFloat(form.tvq) || 0,
     glAccountId: form.glAccountId,
+    enteredBy: form.enteredBy || undefined,
     validated: form.validated,
   };
   if (form.categoryId) payload.categoryId = form.categoryId;
@@ -62,6 +64,7 @@ export default function App() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [managementOpen, setManagementOpen] = useState(false);
+  const [glOpen, setGlOpen] = useState(false);
   const [managementTab, setManagementTab] = useState<'employees' | 'cards'>('employees');
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
@@ -102,8 +105,9 @@ export default function App() {
           setManagementTab('cards');
           setManagementOpen(true);
         }}
+        onOpenGL={() => setGlOpen(true)}
       />
-      <main className="mx-auto max-w-[1800px] px-5 py-8 sm:px-8">
+      <main className="mx-auto max-w-[100%] px-2 py-6 sm:px-4">
         <Filters
           filters={filters}
           onFiltersChange={setFilters}
@@ -143,6 +147,7 @@ export default function App() {
         onOpenChange={setManagementOpen}
         initialTab={managementTab}
       />
+      <GLDrawer open={glOpen} onOpenChange={setGlOpen} />
       <ExpenseDrawer
         open={drawerOpen}
         onOpenChange={(open) => {

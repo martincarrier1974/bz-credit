@@ -152,3 +152,31 @@ export async function deleteCreditCard(id: string) {
   const res = await fetch(`${API}/credit-cards/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(await res.text());
 }
+
+export type GlAccount = {
+  id: string;
+  code: string;
+  name: string;
+  company?: string | null;
+};
+export async function fetchGlAccounts(): Promise<GlAccount[]> {
+  const res = await fetch(`${API}/gl-accounts`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+export async function createGlAccount(body: { code: string; name: string; company?: string }) {
+  const res = await fetch(`${API}/gl-accounts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? await res.text());
+  }
+  return res.json();
+}
+export async function deleteGlAccount(id: string) {
+  const res = await fetch(`${API}/gl-accounts/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(await res.text());
+}

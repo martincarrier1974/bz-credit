@@ -51,21 +51,54 @@ async function main() {
     create: { id: 'cat-3', name: 'Fournitures' },
   });
 
-  const gl1 = await prisma.glAccount.upsert({
-    where: { id: 'gl-1' },
-    update: {},
-    create: { id: 'gl-1', code: '6100', name: 'Fournitures bureau' },
-  });
-  const gl2 = await prisma.glAccount.upsert({
-    where: { id: 'gl-2' },
-    update: {},
-    create: { id: 'gl-2', code: '6200', name: 'Voyages et déplacements' },
-  });
-  const gl3 = await prisma.glAccount.upsert({
-    where: { id: 'gl-3' },
-    update: {},
-    create: { id: 'gl-3', code: '6300', name: 'Frais généraux' },
-  });
+  const glAccountsBZ = [
+    { id: 'gl-1', code: '7405', name: 'BZ Cadeaux/Commandite', company: 'BZ inc.' },
+    { id: 'gl-2', code: '7590', name: 'BZ Formation', company: 'BZ inc.' },
+    { id: 'gl-3', code: '160001', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-4', code: '160002', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-5', code: '160003', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-6', code: '160004', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-7', code: '160005', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-8', code: '160006', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-9', code: '160007', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-10', code: '160008', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-11', code: '160009', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-12', code: '160010', name: 'Aménagement et mobilier de bureau', company: 'BZ inc.' },
+    { id: 'gl-13', code: '170001', name: 'Équipement Informatique Divers - Clc', company: 'BZ inc.' },
+    { id: 'gl-14', code: '170002', name: 'Équipement Informatique Divers - Ser', company: 'BZ inc.' },
+    { id: 'gl-15', code: '170003', name: 'Équipement Informatique Divers - Infi', company: 'BZ inc.' },
+    { id: 'gl-16', code: '170004', name: 'Équipement Informatique Divers - Cyl', company: 'BZ inc.' },
+    { id: 'gl-17', code: '170005', name: 'Équipement Informatique Divers - Prc', company: 'BZ inc.' },
+    { id: 'gl-18', code: '170006', name: 'Équipement Informatique Divers - Ver', company: 'BZ inc.' },
+  ];
+  const glAccountsBZT = [
+    { id: 'gl-19', code: '5000', name: 'BZT Achat', company: 'BZ Telecom inc.' },
+    { id: 'gl-20', code: '5100', name: 'BZT Lait', company: 'BZ Telecom inc.' },
+    { id: 'gl-21', code: '5140', name: 'BZT Essence', company: 'BZ Telecom inc.' },
+    { id: 'gl-22', code: '5355', name: 'BZT Telephone', company: 'BZ Telecom inc.' },
+    { id: 'gl-23', code: '5300', name: 'BZT Fournitures divers', company: 'BZ Telecom inc.' },
+    { id: 'gl-24', code: '5341', name: 'BZT Frais Rep', company: 'BZ Telecom inc.' },
+    { id: 'gl-25', code: '5420', name: 'BZT Voiture', company: 'BZ Telecom inc.' },
+    { id: 'gl-26', code: '5340', name: 'BZT Papeterie Matériel de bureau', company: 'BZ Telecom inc.' },
+    { id: 'gl-27', code: '7390', name: 'BZT Repas', company: 'BZ Telecom inc.' },
+    { id: 'gl-28', code: '5030', name: 'BZT Site Web', company: 'BZ Telecom inc.' },
+    { id: 'gl-29', code: '5330', name: 'BZ Transport/Douanes', company: 'BZ Telecom inc.' },
+    { id: 'gl-30', code: '5333', name: 'BZ Transport/Douanes', company: 'BZ Telecom inc.' },
+    { id: 'gl-31', code: '5480', name: 'BZ Nourriture-Bien être employé', company: 'BZ Telecom inc.' },
+    { id: 'gl-32', code: '7350', name: 'BZT Publicité, commandite, cadeau', company: 'BZ Telecom inc.' },
+    { id: 'gl-33', code: '7360', name: 'BZT-Fête et Évènement de Bureau', company: 'BZ Telecom inc.' },
+    { id: 'gl-34', code: '7590', name: 'BZT-Formation', company: 'BZ Telecom inc.' },
+  ];
+  for (const g of [...glAccountsBZ, ...glAccountsBZT]) {
+    await prisma.glAccount.upsert({
+      where: { id: g.id },
+      update: { code: g.code, name: g.name, company: g.company },
+      create: g,
+    });
+  }
+  const gl1 = await prisma.glAccount.findUniqueOrThrow({ where: { id: 'gl-1' } });
+  const gl2 = await prisma.glAccount.findUniqueOrThrow({ where: { id: 'gl-2' } });
+  const gl3 = await prisma.glAccount.findUniqueOrThrow({ where: { id: 'gl-3' } });
 
   const expenses = await prisma.expense.findMany();
   if (expenses.length > 0) {
