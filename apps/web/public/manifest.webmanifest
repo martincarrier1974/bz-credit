@@ -1,0 +1,24 @@
+{
+  "name": "Factures carte de crédit",
+  "short_name": "BZ Factures",
+  "description": "Gestion des factures carte de crédit",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#bae6fd",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-mobile.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-mobile.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
