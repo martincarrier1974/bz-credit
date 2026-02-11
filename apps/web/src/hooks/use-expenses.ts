@@ -11,10 +11,11 @@ import {
 
 export type ExpensesResponse = { expenses: Expense[]; totals: { amount: number; tps: number; tvq: number; total: number } };
 
-export function useExpensesQuery(params: ExpenseQuery) {
+export function useExpensesQuery(params: ExpenseQuery, enabled = true) {
   return useQuery({
     queryKey: ['expenses', params],
     queryFn: () => fetchExpenses(params),
+    enabled,
   });
 }
 

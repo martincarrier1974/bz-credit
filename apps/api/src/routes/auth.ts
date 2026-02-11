@@ -32,8 +32,8 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     );
     return res.json({ token, username: user.username });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Erreur interne' });
+    console.error('Login error:', err);
+    return res.status(500).json({ error: 'Erreur interne. Vérifiez que la base est migrée et qu’un utilisateur existe (db:seed).' });
   }
 });
 

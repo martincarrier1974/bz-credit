@@ -134,14 +134,6 @@ export function ExpensesTable({
       ),
     },
     {
-      accessorFn: (r) => r.category.name,
-      id: 'category',
-      header: 'Catégorie',
-      cell: ({ getValue }) => (
-        <span className="block truncate text-slate-700 dark:text-slate-300">{getValue() as string}</span>
-      ),
-    },
-    {
       accessorFn: (r) => r.glAccount,
       id: 'gl',
       header: 'GL',

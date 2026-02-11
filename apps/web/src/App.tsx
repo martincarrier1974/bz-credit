@@ -56,6 +56,20 @@ function formToPayload(form: ExpenseForm) {
 export default function App() {
   const { isAuthenticated, isLoading, logout } = useAuth();
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const query = useMemo(() => buildQuery(filters), [filters]);
+  const { data, isLoading: expensesLoading, isError, error } = useExpensesQuery(query, isAuthenticated);
+  const meta = useMeta(isAuthenticated);
+  const createMutation = useCreateExpense();
+  const updateMutation = useUpdateExpense();
+  const uploadMutation = useUploadReceipt();
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [managementOpen, setManagementOpen] = useState(false);
+  const [glOpen, setGlOpen] = useState(false);
+  const [managementTab, setManagementTab] = useState<'employees' | 'cards'>('employees');
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+
+  const expenses = data?.expenses ?? [];
 
   if (isLoading) {
     return (
@@ -68,20 +82,6 @@ export default function App() {
   if (!isAuthenticated) {
     return <Login />;
   }
-  const query = useMemo(() => buildQuery(filters), [filters]);
-  const { data, isLoading: expensesLoading, isError, error } = useExpensesQuery(query);
-  const meta = useMeta();
-  const createMutation = useCreateExpense();
-  const updateMutation = useUpdateExpense();
-  const uploadMutation = useUploadReceipt();
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [managementOpen, setManagementOpen] = useState(false);
-  const [glOpen, setGlOpen] = useState(false);
-  const [managementTab, setManagementTab] = useState<'employees' | 'cards'>('employees');
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-
-  const expenses = data?.expenses ?? [];
 
   const handleSave = (form: ExpenseForm) => {
     const payload = formToPayload(form);
@@ -137,7 +137,12 @@ export default function App() {
               Chargement…
             </div>
           )}
-          {!expensesLoading && !isError && (
+          {!expensesLoading && !isError && expenses.length === 0 && (
+            <div className="rounded-xl border border-slate-200 bg-white p-12 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400">
+              Aucune dépense. Cliquez sur « Nouvelle facture » pour ajouter une dépense.
+            </div>
+          )}
+          {!expensesLoading && !isError && expenses.length > 0 && (
             <ExpensesTable
               data={expenses}
               onEdit={(e) => {
