@@ -78,7 +78,7 @@ expensesRouter.get('/', async (req, res) => {
       orderBy: { date: 'desc' },
     });
 
-    const rows = expenses.map((e) => ({
+    const rows = expenses.map((e: (typeof expenses)[number]) => ({
       id: e.id,
       title: e.title,
       description: e.description,
@@ -106,7 +106,7 @@ expensesRouter.get('/', async (req, res) => {
       updatedAt: e.updatedAt.toISOString(),
     }));
 
-    const totals = rows.reduce(
+    const totals = rows.reduce<{ amount: number; tps: number; tvq: number; total: number }>(
       (acc, r) => ({
         amount: acc.amount + r.amount,
         tps: acc.tps + r.tps,
@@ -274,7 +274,7 @@ expensesRouter.post('/:id/receipt', (req, res, next) => {
         data: { receiptPath },
       });
       return res.json({ receiptPath });
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(e);
       return res.status(500).json({ error: 'Internal server error' });
     }
