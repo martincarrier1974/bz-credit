@@ -44,7 +44,7 @@ creditCardsRouter.get('/', async (_req, res) => {
       include: { employee: true },
     });
     const decrypted = cards.map(sanitizeCard);
-    decrypted.sort((a, b) => a.name.localeCompare(b.name));
+    decrypted.sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
     return res.json(decrypted);
   } catch (err) {
     console.error(err);

@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Login } from '@/components/Login';
 import { Header } from '@/components/Header';
 import { Filters, type FilterState } from '@/components/Filters';
 import { ExpensesTable } from '@/components/ExpensesTable';
@@ -52,9 +54,22 @@ function formToPayload(form: ExpenseForm) {
 }
 
 export default function App() {
+  const { isAuthenticated, isLoading, logout } = useAuth();
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-sky-200 dark:bg-slate-900">
+        <div className="text-lg text-slate-500 dark:text-slate-400">Chargement…</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
   const query = useMemo(() => buildQuery(filters), [filters]);
-  const { data, isLoading, isError, error } = useExpensesQuery(query);
+  const { data, isLoading: expensesLoading, isError, error } = useExpensesQuery(query);
   const meta = useMeta();
   const createMutation = useCreateExpense();
   const updateMutation = useUpdateExpense();
@@ -91,6 +106,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-sky-200 dark:bg-slate-900">
       <Header
+        onLogout={logout}
         onAddExpense={() => {
           setEditingExpense(null);
           setDrawerOpen(true);
@@ -116,12 +132,12 @@ export default function App() {
               {error?.message ?? 'Erreur lors du chargement des dépenses.'}
             </div>
           )}
-          {isLoading && (
+          {expensesLoading && (
             <div className="rounded-xl border border-slate-200 bg-white p-12 text-center text-lg text-slate-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400">
               Chargement…
             </div>
           )}
-          {!isLoading && !isError && (
+          {!expensesLoading && !isError && (
             <ExpensesTable
               data={expenses}
               onEdit={(e) => {

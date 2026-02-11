@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Moon, Sun, Users, CreditCard, BookOpen } from 'lucide-react';
+import { Plus, Moon, Sun, Users, CreditCard, BookOpen, LogOut } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 type Props = {
+  onLogout: () => void;
   onAddExpense: () => void;
   onOpenEmployés: () => void;
   onOpenCartes: () => void;
   onOpenGL: () => void;
 };
 
-export function Header({ onAddExpense, onOpenEmployés, onOpenCartes, onOpenGL }: Props) {
+export function Header({ onLogout, onAddExpense, onOpenEmployés, onOpenCartes, onOpenGL }: Props) {
   const [bzFailed, setBzFailed] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
@@ -66,6 +67,15 @@ export function Header({ onAddExpense, onOpenEmployés, onOpenCartes, onOpenGL }
           >
             <CreditCard className="h-5 w-5" />
             <span className="hidden sm:inline">Cartes</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onLogout}
+            title="Déconnexion"
+            className="h-11 w-11 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-50"
+          >
+            <LogOut className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"

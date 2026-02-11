@@ -11,6 +11,8 @@ import { metaRouter } from './routes/meta.js';
 import { employeesRouter } from './routes/employees.js';
 import { creditCardsRouter } from './routes/credit-cards.js';
 import { glAccountsRouter } from './routes/gl-accounts.js';
+import { authRouter } from './routes/auth.js';
+import { authMiddleware } from './middleware/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -20,11 +22,12 @@ app.use(cors({ origin: true }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-app.use('/api/expenses', expensesRouter);
-app.use('/api/meta', metaRouter);
-app.use('/api/employees', employeesRouter);
-app.use('/api/credit-cards', creditCardsRouter);
-app.use('/api/gl-accounts', glAccountsRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/expenses', authMiddleware, expensesRouter);
+app.use('/api/meta', authMiddleware, metaRouter);
+app.use('/api/employees', authMiddleware, employeesRouter);
+app.use('/api/credit-cards', authMiddleware, creditCardsRouter);
+app.use('/api/gl-accounts', authMiddleware, glAccountsRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

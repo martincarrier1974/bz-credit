@@ -18,7 +18,9 @@ glAccountsRouter.get('/', async (_req, res) => {
   try {
     const rows = await prisma.glAccount.findMany();
     const accounts = rows.map(decryptGlAccount);
-    accounts.sort((a, b) => (a.company ?? '').localeCompare(b.company ?? '') || a.code.localeCompare(b.code));
+    accounts.sort((a: { company?: string | null; code: string }, b: { company?: string | null; code: string }) =>
+      (a.company ?? '').localeCompare(b.company ?? '') || a.code.localeCompare(b.code)
+    );
     return res.json(accounts);
   } catch (err) {
     console.error(err);

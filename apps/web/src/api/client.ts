@@ -1,4 +1,13 @@
+import { getToken } from './auth';
+
 const API = '/api';
+
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  const h: Record<string, string> = { ...extra };
+  const token = getToken();
+  if (token) h['Authorization'] = `Bearer ${token}`;
+  return h;
+}
 
 export type ExpenseQuery = {
   from?: string;
@@ -15,7 +24,7 @@ export async function fetchExpenses(params: ExpenseQuery) {
   if (params.validated) sp.set('validated', params.validated);
   if (params.hasInvoice) sp.set('hasInvoice', params.hasInvoice);
   if (params.search) sp.set('search', params.search);
-  const res = await fetch(`${API}/expenses?${sp}`);
+  const res = await fetch(`${API}/expenses?${sp}`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -23,7 +32,7 @@ export async function fetchExpenses(params: ExpenseQuery) {
 export async function createExpense(body: Record<string, unknown>) {
   const res = await fetch(`${API}/expenses`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -36,7 +45,7 @@ export async function createExpense(body: Record<string, unknown>) {
 export async function updateExpense(id: string, body: Record<string, unknown>) {
   const res = await fetch(`${API}/expenses/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -47,7 +56,7 @@ export async function updateExpense(id: string, body: Record<string, unknown>) {
 }
 
 export async function deleteExpense(id: string) {
-  const res = await fetch(`${API}/expenses/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API}/expenses/${id}`, { method: 'DELETE', headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
 }
 
@@ -56,6 +65,7 @@ export async function uploadReceipt(id: string, file: File): Promise<{ receiptPa
   form.append('receipt', file);
   const res = await fetch(`${API}/expenses/${id}/receipt`, {
     method: 'POST',
+    headers: authHeaders(),
     body: form,
   });
   if (!res.ok) {
@@ -66,21 +76,21 @@ export async function uploadReceipt(id: string, file: File): Promise<{ receiptPa
 }
 
 export async function fetchMeta() {
-  const res = await fetch(`${API}/meta`);
+  const res = await fetch(`${API}/meta`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export type Employee = { id: string; name: string; creditCards?: { id: string; name: string }[] };
 export async function fetchEmployees(): Promise<Employee[]> {
-  const res = await fetch(`${API}/employees`);
+  const res = await fetch(`${API}/employees`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 export async function createEmployee(name: string) {
   const res = await fetch(`${API}/employees`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ name }),
   });
   if (!res.ok) {
@@ -92,7 +102,7 @@ export async function createEmployee(name: string) {
 export async function updateEmployee(id: string, name: string) {
   const res = await fetch(`${API}/employees/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ name }),
   });
   if (!res.ok) {
@@ -102,7 +112,7 @@ export async function updateEmployee(id: string, name: string) {
   return res.json();
 }
 export async function deleteEmployee(id: string) {
-  const res = await fetch(`${API}/employees/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API}/employees/${id}`, { method: 'DELETE', headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
 }
 
@@ -120,14 +130,14 @@ export type CreditCard = {
   employee: { id: string; name: string };
 };
 export async function fetchCreditCards(): Promise<CreditCard[]> {
-  const res = await fetch(`${API}/credit-cards`);
+  const res = await fetch(`${API}/credit-cards`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 export async function createCreditCard(body: Record<string, unknown>) {
   const res = await fetch(`${API}/credit-cards`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -139,7 +149,7 @@ export async function createCreditCard(body: Record<string, unknown>) {
 export async function updateCreditCard(id: string, body: Record<string, unknown>) {
   const res = await fetch(`${API}/credit-cards/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -149,7 +159,7 @@ export async function updateCreditCard(id: string, body: Record<string, unknown>
   return res.json();
 }
 export async function deleteCreditCard(id: string) {
-  const res = await fetch(`${API}/credit-cards/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API}/credit-cards/${id}`, { method: 'DELETE', headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
 }
 
@@ -160,14 +170,14 @@ export type GlAccount = {
   company?: string | null;
 };
 export async function fetchGlAccounts(): Promise<GlAccount[]> {
-  const res = await fetch(`${API}/gl-accounts`);
+  const res = await fetch(`${API}/gl-accounts`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 export async function createGlAccount(body: { code: string; name: string; company?: string }) {
   const res = await fetch(`${API}/gl-accounts`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -177,6 +187,6 @@ export async function createGlAccount(body: { code: string; name: string; compan
   return res.json();
 }
 export async function deleteGlAccount(id: string) {
-  const res = await fetch(`${API}/gl-accounts/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API}/gl-accounts/${id}`, { method: 'DELETE', headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
 }

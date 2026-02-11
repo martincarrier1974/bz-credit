@@ -15,15 +15,15 @@ employeesRouter.get('/', async (_req, res) => {
       include: { creditCards: true },
     });
     const employees = rows
-      .map((e) => ({
+      .map((e: { id: string; name: string; creditCards: { id: string; name: string }[] }) => ({
         ...e,
         name: decrypt(e.name) ?? e.name,
-        creditCards: e.creditCards.map((c) => ({
+        creditCards: e.creditCards.map((c: { id: string; name: string }) => ({
           ...c,
           name: decrypt(c.name) ?? c.name,
         })),
       }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
     return res.json(employees);
   } catch (err) {
     console.error(err);
